@@ -32,6 +32,7 @@ public:
 public:
     explicit UIpack_as_widget_upload(QWidget *parent = nullptr);
 
+    void setDisable(bool);
     void uiInit();
 
 signals:

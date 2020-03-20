@@ -22,6 +22,7 @@ public:
 public:
     explicit UIpack_as_widget_login(QWidget *parent = nullptr);
 
+
     void uiInit();
 
 signals:

@@ -40,3 +40,18 @@ void UIpack_as_widget_upload::uiInit()
 
     return;
 }
+
+void UIpack_as_widget_upload::setDisable(bool flag)
+{
+
+    pb_download.setDisabled(flag);
+    pb_search.setDisabled(flag);
+    pb_refresh.setDisabled(flag);
+    pb_upload.setDisabled(flag);
+    pb_delete.setDisabled(flag);
+    pb_logout.setDisabled(flag);
+
+    le_search.setDisabled(flag);
+
+    return;
+}
