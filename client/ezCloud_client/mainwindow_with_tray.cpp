@@ -5,7 +5,7 @@ mainWindow_with_tray::mainWindow_with_tray(QWidget  *parent) : QMainWindow(paren
 {
     trayicon = new QSystemTrayIcon(this);
 
-    QIcon icon("./icon.png");
+    QIcon icon(":/icon/icon.png");
     trayicon->setIcon(icon);
 
     trayiconMenu = new QMenu(this);

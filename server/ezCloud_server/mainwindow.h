@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 
+#include<QTcpServer>
+#include<QTcpSocket>
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -17,5 +20,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    QTcpServer *server;
+    QTcpSocket *socket;
+    void messageHandler();
 };
 #endif // MAINWINDOW_H
