@@ -17,10 +17,13 @@ private:
     //UIpack_as_widget_login wgt_ui;
     //UIpack_as_widget_download wgt_ui;
     UIpack_as_widget_upload wgt_ui;
+    QTcpSocket *socket;
 
 private:
     Login_window loginW;
-
+    void changeToLogin();
+    void changeToMain(QTcpSocket *socket);
+    void refreshList();
 
 public:
     MainWindow(QWidget *parent = nullptr);

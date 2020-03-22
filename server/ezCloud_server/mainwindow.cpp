@@ -20,9 +20,9 @@ MainWindow::~MainWindow()
 void MainWindow::messageHandler()
 {
     socket = server->nextPendingConnection();
-    // create another thread here
     QString message = QVariant(socket->readAll()).toString();
     qDebug()<<message;
+    // create another thread here
 /*
     if 登录请求 返回行不行
     else if 注册请求 返回行不行

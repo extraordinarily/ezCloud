@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QObject>
+#include <QTcpSocket>
 #include <uipack_as_widget_login.h>
 
 class Login_window : public QMainWindow
@@ -10,6 +11,8 @@ class Login_window : public QMainWindow
     Q_OBJECT
 private:
     UIpack_as_widget_login wgt_ui;
+    void login();
+    QTcpSocket *socket;
 
 public:
     explicit Login_window(QWidget *parent = nullptr);
@@ -17,6 +20,7 @@ public:
 
 
 signals:
+    void changeToMain(QTcpSocket *socket);
 
 };
 
