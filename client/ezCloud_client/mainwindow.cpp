@@ -2,7 +2,7 @@
 
 MainWindow::MainWindow(QWidget *parent) : mainWindow_with_tray(parent)
 {
-    connect(&loginW,&Login_window::changeToMain,this,&MainWindow::changeToMain);
+    connect(&loginW,&LoginWindow::changeToMain,this,&MainWindow::changeToMain);
     connect(&wgt_ui.pb_logout,&QPushButton::clicked,this,&MainWindow::changeToLogin);
     connect(&wgt_ui.pb_refresh,&QPushButton::clicked,this,&MainWindow::refreshList);
     this->setCentralWidget(&wgt_ui);

@@ -6,7 +6,7 @@
 #include <uipack_as_widget_upload.h>
 #include <uipack_as_widget_download.h>
 #include <mainwindow_with_tray.h>
-#include <login_window.h>
+#include <loginwindow.h>
 
 
 class MainWindow : public mainWindow_with_tray
@@ -20,7 +20,7 @@ private:
     QTcpSocket *socket;
 
 private:
-    Login_window loginW;
+    LoginWindow loginW;
     void changeToLogin();
     void changeToMain(QTcpSocket *socket);
     void refreshList();

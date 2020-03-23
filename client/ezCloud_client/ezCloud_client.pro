@@ -16,7 +16,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    login_window.cpp \
+    loginwindow.cpp \
     main.cpp \
     mainwindow.cpp \
     mainwindow_with_tray.cpp \
@@ -25,7 +25,7 @@ SOURCES += \
     uipack_as_widget_upload.cpp
 
 HEADERS += \
-    login_window.h \
+    loginwindow.h \
     mainwindow.h \
     mainwindow_with_tray.h \
     socket_defines.h \
