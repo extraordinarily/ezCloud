@@ -22,6 +22,6 @@ private:
     Ui::MainWindow *ui;
     QTcpServer *server;
     QTcpSocket *socket;
-    void messageHandler();
+    void connectingHandler();
 };
 #endif // MAINWINDOW_H

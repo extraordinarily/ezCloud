@@ -2,30 +2,29 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <uipack_as_widget_login.h>
-#include <uipack_as_widget_upload.h>
-#include <uipack_as_widget_download.h>
-#include <mainwindow_with_tray.h>
-#include <loginwindow.h>
+#include <QMessageBox>
+#include <QDialog>
+#include <QThread>
+#include "ui_header.h"
+#include "clientsocket.h"
 
-
-class MainWindow : public mainWindow_with_tray
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-private:
-    //UIpack_as_widget_login wgt_ui;
-    //UIpack_as_widget_download wgt_ui;
-    UIpack_as_widget_upload wgt_ui;
-    QTcpSocket *socket;
-
-private:
-    LoginWindow loginW;
-    void changeToLogin();
-    void changeToMain(QTcpSocket *socket);
-    void refreshList();
-
 public:
+    UIpack_as_widget_login loginUI;
+    UIpack_as_widget_download downloadUI;
+    UIpack_as_widget_upload uploadUI;
+
+    QThread socketThread;
+    ClientSocket clientSocket;
+
+    void changeToLogin();
+    void changeToDownload();
+    void changeToUpload();
+    void errorHandler(int errorCode);
+
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 

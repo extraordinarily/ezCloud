@@ -9,7 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
     
     server = new QTcpServer(this);
     server->listen(QHostAddress::Any,30142);
-    connect(server,&QTcpServer::newConnection,this,&MainWindow::messageHandler);
+    connect(server,&QTcpServer::newConnection,this,&MainWindow::connectingHandler);
 }
 
 MainWindow::~MainWindow()
@@ -17,11 +17,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::messageHandler()
+void MainWindow::connectingHandler()
 {
     socket = server->nextPendingConnection();
-    QString message = QVariant(socket->readAll()).toString();
-    qDebug()<<message;
+    conn
     // create another thread here
 /*
     if 登录请求 返回行不行

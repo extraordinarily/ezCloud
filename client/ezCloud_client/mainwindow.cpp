@@ -1,38 +1,50 @@
 #include "mainwindow.h"
 
-MainWindow::MainWindow(QWidget *parent) : mainWindow_with_tray(parent)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
 {
-    connect(&loginW,&LoginWindow::changeToMain,this,&MainWindow::changeToMain);
-    connect(&wgt_ui.pb_logout,&QPushButton::clicked,this,&MainWindow::changeToLogin);
-    connect(&wgt_ui.pb_refresh,&QPushButton::clicked,this,&MainWindow::refreshList);
-    this->setCentralWidget(&wgt_ui);
-    changeToLogin();
+    clientSocket.ipLineEdit = &loginUI.le_input[0];
+
+    connect(&loginUI.pb_login,&QPushButton::clicked,&clientSocket,&ClientSocket::login);
+    connect(&clientSocket,&ClientSocket::error,this,&MainWindow::errorHandler);
+
+    clientSocket.moveToThreadAll(&socketThread);
+    socketThread.start();
+
+    setCentralWidget(&loginUI);
 }
 
 MainWindow::~MainWindow()
 {
-    //delete ui;
+    socketThread.quit();
+    socketThread.wait();
+}
+
+void MainWindow::errorHandler(int errorCode)
+{
+    switch(errorCode)
+    {
+        case 1:
+            QMessageBox::warning(this,"warning","check you ip address!");
+            break;
+        case 2:
+            QMessageBox::warning(this,"warning","connecting time out");
+        default:
+            break;
+    }
 }
 
 void MainWindow::changeToLogin()
 {
-    wgt_ui.setDisable(true);
-    this->hide();
-    // heart beat stop
-    loginW.show();
+    
 }
 
-void MainWindow::changeToMain(QTcpSocket *socket)
+void MainWindow::changeToDownload()
 {
-    this->socket = socket;
-    wgt_ui.setDisable(false);
-    this->show();
-    // heart beat begin
-    loginW.hide();
+
 }
 
-void MainWindow::refreshList()
+void MainWindow::changeToUpload()
 {
-    // connect to server
-    socket->write("fresh",5);
+
 }
