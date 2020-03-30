@@ -13,6 +13,9 @@ class ClientSocket : public QObject
     Q_OBJECT
 public:
     QLineEdit *ipLineEdit;
+    QLineEdit *usernameLineEdit;
+
+    int state;
 
     explicit ClientSocket(QObject *parent = nullptr);
     QTcpSocket socket;

@@ -4,6 +4,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     clientSocket.ipLineEdit = &loginUI.le_input[0];
+    clientSocket.usernameLineEdit = &loginUI.le_input[1];
 
     connect(&loginUI.pb_login,&QPushButton::clicked,&clientSocket,&ClientSocket::login);
     connect(&clientSocket,&ClientSocket::error,this,&MainWindow::errorHandler);

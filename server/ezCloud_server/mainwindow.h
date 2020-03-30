@@ -3,8 +3,7 @@
 
 #include <QMainWindow>
 
-#include<QTcpServer>
-#include<QTcpSocket>
+#include "ezserver.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -20,8 +19,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QTcpServer *server;
-    QTcpSocket *socket;
-    void connectingHandler();
+    EZServer *server;
 };
 #endif // MAINWINDOW_H
