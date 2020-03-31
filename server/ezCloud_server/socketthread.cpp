@@ -24,9 +24,18 @@ void SocketThread::run()
 
 void SocketThread::messageHandler()
 {
+    // change to switch case
     char tmp[100];
     memcpy(tmp,socket->readAll(),20);
-    if (tmp[2]==1)
+    if (tmp[2]==0)
+    {
+        tmp[2] = 0;
+        tmp[1] = 0;
+        socket->write(tmp,4);
+        socket->waitForBytesWritten();
+        return ;
+    }
+    else if (tmp[2]==1)
     {
         tmp[2] = 3;
         tmp[1] = 0;

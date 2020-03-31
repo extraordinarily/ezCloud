@@ -18,15 +18,22 @@ public:
 
     int state;
     int cookie;
-
-    explicit ClientSocket(QObject *parent = nullptr);
+    std::chrono::steady_clock::time_point active;
+    QTimer timer;
     QTcpSocket socket;
 
-    void login();
+    explicit ClientSocket(QObject *parent = nullptr);
+
     void moveToThreadAll(QThread *thread);
+
+    void login();
+    void logout();
+    void messageHandler();
+    void heatBeatHandler();
 
 signals:
     void error(int errorCode);
+    void changeToDownload();
 };
 
 #endif // CLIENTSOCKET_H

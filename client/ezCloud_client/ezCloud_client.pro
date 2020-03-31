@@ -22,6 +22,7 @@ SOURCES += \
 
 HEADERS += \
     clientsocket.h \
+    downloadwindow.h \
     mainwindow.h \
     ui_header.h
 

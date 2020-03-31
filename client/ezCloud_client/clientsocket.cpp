@@ -67,13 +67,54 @@ void ClientSocket::login()
     // login success
     state = 1;
     cookie = tmp[3];
-    // 启动心跳机制
-    // 启动端口监听
-    qDebug()<<cookie;
+    connect(&socket,&QTcpSocket::readyRead,this,&ClientSocket::messageHandler,Qt::QueuedConnection);
+    connect(&timer,&QTimer::timeout,this,&ClientSocket::heatBeatHandler,Qt::QueuedConnection);
+    emit changeToDownload();
+    active = std::chrono::steady_clock::now();
+    timer.start(5000);
+}
+
+void ClientSocket::logout()
+{
+    timer.stop();
+    socket.disconnectFromHost();
+    state = 0;
+    emit error(1);
+}
+
+void ClientSocket::messageHandler()
+{
+    char tmp[100];
+    memcpy(tmp,socket.readAll(),4);
+    active = std::chrono::steady_clock::now();
+
+
+}
+
+void ClientSocket::heatBeatHandler()
+{
+    if (state==0) return ;
+    auto gap = std::chrono::steady_clock::now() - active;
+    if (gap > std::chrono::seconds(10))
+    {
+        logout();
+    }
+    else if (gap > std::chrono::seconds(5))
+    {
+        char tmp[64];
+        tmp[0]=0; tmp[1]=0; tmp[2]=0; tmp[3]=cookie;
+        socket.write(tmp,4);
+        if (!socket.waitForBytesWritten())
+        {
+            logout();
+        }
+    }
 }
 
 void ClientSocket::moveToThreadAll(QThread *thread)
 {
     socket.moveToThread(thread);
+    timer.moveToThread(thread);
     this->moveToThread(thread);
 }
+

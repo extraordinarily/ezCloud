@@ -9,11 +9,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(&loginUI.pb_login,&QPushButton::clicked,&clientSocket,&ClientSocket::login,Qt::QueuedConnection);
     connect(&clientSocket,&ClientSocket::error,this,&MainWindow::errorHandler,Qt::QueuedConnection);
+    connect(&clientSocket,&ClientSocket::changeToDownload,this,&MainWindow::changeToDownload,Qt::QueuedConnection);
 
     clientSocket.moveToThreadAll(&socketThread);
     socketThread.start();
-
-    setCentralWidget(&loginUI);
+    loginUI.show();
 }
 
 MainWindow::~MainWindow()
@@ -47,6 +47,8 @@ void MainWindow::changeToLogin()
 
 void MainWindow::changeToDownload()
 {
+    loginUI.hide();
+    downloadUI.show();
 
 }
 
