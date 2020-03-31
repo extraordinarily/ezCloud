@@ -6,7 +6,6 @@ SocketThread::SocketThread(qintptr handle)
     socket->setSocketDescriptor(handle);
     moveToThread(this);
     socket->moveToThread(this);
-    connect(socket,&QTcpSocket::readyRead,this,&SocketThread::messageHandler,Qt::QueuedConnection);
 }
 
 void SocketThread::run()
@@ -14,6 +13,7 @@ void SocketThread::run()
     if (socket->waitForConnected())
     {
         qDebug()<<"connected";
+        connect(socket,&QTcpSocket::readyRead,this,&SocketThread::messageHandler,Qt::QueuedConnection);
     }
     else
     {
@@ -24,6 +24,15 @@ void SocketThread::run()
 
 void SocketThread::messageHandler()
 {
-    QString ss=QVariant(socket->readAll()).toString();
-    qDebug()<<ss;
+    char tmp[100];
+    memcpy(tmp,socket->readAll(),20);
+    if (tmp[2]==1)
+    {
+        tmp[2] = 3;
+        tmp[1] = 0;
+        socket->write(tmp,4);
+        socket->waitForBytesWritten();
+        return ;
+    }
+    // messageHandler
 }

@@ -5,9 +5,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     clientSocket.ipLineEdit = &loginUI.le_input[0];
     clientSocket.usernameLineEdit = &loginUI.le_input[1];
+    clientSocket.passwordLineEdit = &loginUI.le_input[2];
 
-    connect(&loginUI.pb_login,&QPushButton::clicked,&clientSocket,&ClientSocket::login);
-    connect(&clientSocket,&ClientSocket::error,this,&MainWindow::errorHandler);
+    connect(&loginUI.pb_login,&QPushButton::clicked,&clientSocket,&ClientSocket::login,Qt::QueuedConnection);
+    connect(&clientSocket,&ClientSocket::error,this,&MainWindow::errorHandler,Qt::QueuedConnection);
 
     clientSocket.moveToThreadAll(&socketThread);
     socketThread.start();
@@ -29,7 +30,11 @@ void MainWindow::errorHandler(int errorCode)
             QMessageBox::warning(this,"warning","check you ip address!");
             break;
         case 2:
+            QMessageBox::warning(this,"warning","check you user name");
+            break;
+        case 3:
             QMessageBox::warning(this,"warning","connecting time out");
+            break;
         default:
             break;
     }
