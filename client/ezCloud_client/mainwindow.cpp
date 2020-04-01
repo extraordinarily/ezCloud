@@ -23,17 +23,15 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&clientSocket,&ClientSocket::error,this,&MainWindow::errorHandler,Qt::QueuedConnection);
     connect(&clientSocket,&ClientSocket::changeToDownload,this,&MainWindow::changeToDownload,Qt::QueuedConnection);
 
-<<<<<<< HEAD
-=======
     connect(&downloadUI.tbv_download, SIGNAL(clicked(const QModelIndex &)), this, SLOT(tableViewClicked_download(const QModelIndex &)));
     connect(&uploadUI.tbv_upload, SIGNAL(clicked(const QModelIndex &)), this, SLOT(tableViewClicked_upload(const QModelIndex &)));
 
     clientSocket.moveToThreadAll(&socketThread);
-
->>>>>>> 554577acdb78209a44978dd7f9b7204b89a221e9
     socketThread.start();
     //loginUI.show();
-    uploadUI.show();
+    //uploadUI.show();
+    win.setCentralWidget(&uploadUI);
+    win.show();
     this->dbInit();
     this->uploadTableRefresh(test, 2);
 }

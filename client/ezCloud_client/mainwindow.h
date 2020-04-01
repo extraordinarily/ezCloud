@@ -44,6 +44,8 @@ public:
     UIpack_as_widget_download downloadUI;
     UIpack_as_widget_upload uploadUI;
 
+    QMainWindow win;
+
     QThread socketThread;
     ClientSocket clientSocket;
 
