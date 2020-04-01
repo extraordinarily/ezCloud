@@ -22,7 +22,6 @@ SOURCES += \
 
 HEADERS += \
     clientsocket.h \
-    downloadwindow.h \
     mainwindow.h \
     ui_header.h
 
@@ -35,4 +34,3 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
-    icon.qrc
