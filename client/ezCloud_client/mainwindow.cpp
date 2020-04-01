@@ -27,6 +27,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&uploadUI.tbv_upload, SIGNAL(clicked(const QModelIndex &)), this, SLOT(tableViewClicked_upload(const QModelIndex &)));
 
     clientSocket.moveToThreadAll(&socketThread);
+
+    downloadWindow.setCentralWidget(&downloadUI);
+    downloadWindow.show();
+
     socketThread.start();
     //loginUI.show();
     //uploadUI.show();
@@ -216,6 +220,7 @@ void MainWindow::tableViewClicked_download(const QModelIndex& index)
     currentRowNum_download = index.row();
     rcd_current_download = mdl_download->record(currentRowNum_download);
     qDebug() << currentRowNum_download;
+    qDebug() << rcd_current_upload.value(0).toString() << rcd_current_upload.value(1).toString();
 }
 
 void MainWindow::tableViewClicked_upload(const QModelIndex& index)
@@ -223,4 +228,6 @@ void MainWindow::tableViewClicked_upload(const QModelIndex& index)
     currentRowNum_upload = index.row();
     rcd_current_upload = mdl_upload->record(currentRowNum_upload);
     qDebug() << currentRowNum_upload;
+    qDebug() << rcd_current_upload.value(0).toString() << rcd_current_upload.value(1).toString();
+    downloadWindow.show();
 }
