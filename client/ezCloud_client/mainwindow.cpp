@@ -3,40 +3,36 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    // Debug
+    // -----------------Debug-------------------
     loginUI.le_input[0].setText("192.168.1.3");
     loginUI.le_input[1].setText("test");
     loginUI.le_input[2].setText("en en");
+    // -----------------------------------------
 
-
-    // -------------
-
-
-
+    // -----------------socket------------------
     clientSocket.moveToThreadAll(&socketThread);
     clientSocket.ipLineEdit = &loginUI.le_input[0];
     clientSocket.usernameLineEdit = &loginUI.le_input[1];
     clientSocket.passwordLineEdit = &loginUI.le_input[2];
-
     connect(&loginUI.pb_login,&QPushButton::clicked,&clientSocket,&ClientSocket::login,Qt::QueuedConnection);
-
     connect(&clientSocket,&ClientSocket::error,this,&MainWindow::errorHandler,Qt::QueuedConnection);
     connect(&clientSocket,&ClientSocket::changeToDownload,this,&MainWindow::changeToDownload,Qt::QueuedConnection);
+    connect(&uploadUI.pb_logout,&QPushButton::clicked,this,&MainWindow::changeToLogin);
+    connect(this,&MainWindow::logout,&clientSocket,&ClientSocket::logout,Qt::QueuedConnection);
 
+    connect(&uploadUI.pb_refresh,&QPushButton::clicked,this,&MainWindow::getRefresh);
+    connect(this,&MainWindow::refresh,&clientSocket,&ClientSocket::refresh,Qt::QueuedConnection);
+
+    socketThread.start();
+    loginUI.show();
+    // -----------------------------------------
+
+
+    // -----------------------------------------
     connect(&downloadUI.tbv_download, SIGNAL(clicked(const QModelIndex &)), this, SLOT(tableViewClicked_download(const QModelIndex &)));
     connect(&uploadUI.tbv_upload, SIGNAL(clicked(const QModelIndex &)), this, SLOT(tableViewClicked_upload(const QModelIndex &)));
 
-    clientSocket.moveToThreadAll(&socketThread);
-
-    downloadWindow.setCentralWidget(&downloadUI);
-    downloadWindow.show();
-
-    socketThread.start();
-    //loginUI.show();
-    //uploadUI.show();
-    win.setCentralWidget(&uploadUI);
-    win.show();
-    this->dbInit();
+    dbInit();
     this->uploadTableRefresh(test, 2);
 }
 
@@ -66,15 +62,22 @@ void MainWindow::errorHandler(int errorCode)
     }
 }
 
+void MainWindow::getRefresh()
+{
+    emit refresh();
+}
+
 void MainWindow::changeToLogin()
 {
-    
+    emit logout();
+    uploadUI.hide();
+    loginUI.show();
 }
 
 void MainWindow::changeToDownload()
 {
     loginUI.hide();
-    downloadUI.show();
+    uploadUI.show();
 
 }
 
@@ -93,12 +96,7 @@ void MainWindow::dbInit()
     this->db.close();
     this->db = QSqlDatabase::addDatabase("QSQLITE");
     this->db.setDatabaseName(qstr_dbname);
-    if (!this->db.open()) {
-        qDebug() << "Error: tableViewInit(QTableView* tbv) Failed to connect database." << this->db.lastError();
-    }else{
-        qDebug() << "tableViewInit(QTableView* tbv) Succeed to connect database." ;
-    }
-
+    this->db.open();
     return;
 }
 
@@ -229,5 +227,5 @@ void MainWindow::tableViewClicked_upload(const QModelIndex& index)
     rcd_current_upload = mdl_upload->record(currentRowNum_upload);
     qDebug() << currentRowNum_upload;
     qDebug() << rcd_current_upload.value(0).toString() << rcd_current_upload.value(1).toString();
-    downloadWindow.show();
+    downloadUI.show();
 }

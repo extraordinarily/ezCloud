@@ -71,7 +71,7 @@ void ClientSocket::login()
     connect(&timer,&QTimer::timeout,this,&ClientSocket::heatBeatHandler,Qt::QueuedConnection);
     emit changeToDownload();
     active = std::chrono::steady_clock::now();
-    timer.start(5000);
+    timer.start(10000);
 }
 
 void ClientSocket::logout()
@@ -79,27 +79,34 @@ void ClientSocket::logout()
     timer.stop();
     socket.disconnectFromHost();
     state = 0;
-    emit error(1);
 }
 
 void ClientSocket::messageHandler()
 {
+    // fill buffer
+    // check buffer
     char tmp[100];
     memcpy(tmp,socket.readAll(),4);
     active = std::chrono::steady_clock::now();
+    if (tmp[2]==0)
+    {
 
-
+    }
+    {
+        // emit showRefresh();
+    }
 }
 
 void ClientSocket::heatBeatHandler()
 {
     if (state==0) return ;
     auto gap = std::chrono::steady_clock::now() - active;
-    if (gap > std::chrono::seconds(10))
+    if (gap > std::chrono::seconds(20))
     {
         logout();
+        emit error(4);
     }
-    else if (gap > std::chrono::seconds(5))
+    else if (gap > std::chrono::seconds(10))
     {
         char tmp[64];
         tmp[0]=0; tmp[1]=0; tmp[2]=0; tmp[3]=cookie;
@@ -107,7 +114,20 @@ void ClientSocket::heatBeatHandler()
         if (!socket.waitForBytesWritten())
         {
             logout();
+            emit error(4);
         }
+    }
+}
+
+void ClientSocket::refresh()
+{
+    char tmp[64];
+    tmp[0]=0; tmp[1]=0; tmp[2]=3; tmp[3]=cookie;
+    socket.write(tmp,4);
+    if (!socket.waitForBytesWritten())
+    {
+        logout();
+        emit error(4);
     }
 }
 

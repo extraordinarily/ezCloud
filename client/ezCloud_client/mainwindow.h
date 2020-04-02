@@ -7,7 +7,6 @@
 #include <QThread>
 #include <string>
 #include <QTableView>
-#include <QtSql/QSqlRecord>
 #include <QSqlQueryModel>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -44,10 +43,6 @@ public:
     UIpack_as_widget_download downloadUI;
     UIpack_as_widget_upload uploadUI;
 
-    QMainWindow downloadWindow;
-
-
-
     QThread socketThread;
     ClientSocket clientSocket;
 
@@ -58,6 +53,11 @@ public:
 
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    void getRefresh();
+signals:
+    void logout();
+    void refresh();
 private slots:
     void tableViewClicked_download(const QModelIndex& index);
     void tableViewClicked_upload(const QModelIndex& index);

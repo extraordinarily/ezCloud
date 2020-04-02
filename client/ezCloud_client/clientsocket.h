@@ -30,6 +30,7 @@ public:
     void logout();
     void messageHandler();
     void heatBeatHandler();
+    void refresh();
 
 signals:
     void error(int errorCode);

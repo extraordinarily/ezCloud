@@ -96,7 +96,6 @@ class UIpack_as_widget_upload : public QWidget
     Q_OBJECT
 public:
     QVBoxLayout vbl_main;
-    QHBoxLayout hbl_up;
     QHBoxLayout hbl_second;
     QHBoxLayout hbl_down;
     QTableView tbv_upload;
@@ -104,8 +103,6 @@ public:
     QFormLayout fl_searchbox;
     QLineEdit le_search;
     QLabel lb_search;
-
-    QPushButton pb_download;
 
     QPushButton pb_search;
     QPushButton pb_refresh;
@@ -118,13 +115,9 @@ public:
     {
         this->setLayout(&vbl_main);
 
-        vbl_main.addLayout(&hbl_up);
         vbl_main.addLayout(&hbl_second);
         vbl_main.addWidget(&tbv_upload);
         vbl_main.addLayout(&hbl_down);
-
-        hbl_up.addWidget(&pb_download);
-        hbl_up.addStretch();
 
         hbl_second.addLayout(&fl_searchbox);
         hbl_second.addWidget(&pb_search);
@@ -138,7 +131,6 @@ public:
         hbl_down.addStretch();
         hbl_down.addWidget(&pb_logout);
 
-        pb_download.setText("下载页面");
         pb_search.setText("搜索");
         pb_refresh.setText("刷新");
         pb_upload.setText("上传");
