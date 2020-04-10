@@ -3,18 +3,30 @@
 
 #include <QTcpServer>
 #include <bits/stdc++.h>
+#include <QTimer>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QMessageBox>
 #include "socketthread.h"
+
 
 class EZServer : public QTcpServer
 {
+    Q_OBJECT
 public:
-    EZServer();
+    EZServer(QWidget * win);
     ~EZServer();
 
-    std::vector<SocketThread *> socketList;
+    std::list<SocketThread *> socketList;
+    QSqlDatabase db;
+    void dbHandler(SocketThread * thread,QByteArray packet);
+    QWidget *mainwin;
 
 protected:
     virtual void incomingConnection(qintptr handle) override;
+
+signals:
+    void sendMessage(QByteArray message);
 };
 
 #endif // EZSERVER_H

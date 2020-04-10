@@ -1,4 +1,4 @@
-QT       += core gui network sql
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -16,21 +16,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    clientsocket.cpp \
+    controlsocket.cpp \
+    filesever.cpp \
+    filesocket.cpp \
     main.cpp \
-    mainwindow.cpp
+    ezclient.cpp \
+    senderthread.cpp
 
 HEADERS += \
-    clientsocket.h \
-    mainwindow.h \
+    controlsocket.h \
+    ezclient.h \
+    filesever.h \
+    filesocket.h \
+    senderthread.h \
     ui_header.h
-
-FORMS += \
-
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-RESOURCES += \

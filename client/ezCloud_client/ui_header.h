@@ -9,7 +9,9 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QHeaderView>
 #include <QTableView>
+#include <QStandardItemModel>
 
 class UIpack_as_widget_download : public QWidget
 {
@@ -63,8 +65,8 @@ public:
     QVBoxLayout vbl_main;
     QFormLayout fl_up;
     QHBoxLayout hbl_down;
-    QLabel lb_tips[3];
-    QLineEdit le_input[3];
+    QLabel lb[3];
+    QLineEdit ipAddr;
     QPushButton pb_login;
     QPushButton pb_register;
 
@@ -75,13 +77,11 @@ public:
         vbl_main.addLayout(&fl_up);
         vbl_main.addLayout(&hbl_down);
 
-        for(int i = 0; i < 3; i++)
-        {
-            fl_up.addRow(&lb_tips[i], &le_input[i]);
-        }
-        lb_tips[0].setText("主机ip");
-        lb_tips[1].setText("用户名");
-        lb_tips[2].setText("密码");
+        fl_up.addRow(&lb[0], &ipAddr);
+        fl_up.addRow(&lb[1], &lb[2]);
+
+        lb[0].setText("主机ip");
+        lb[1].setText("设备状态：");
 
         hbl_down.addWidget(&pb_login);
         hbl_down.addWidget(&pb_register);
@@ -98,18 +98,19 @@ public:
     QVBoxLayout vbl_main;
     QHBoxLayout hbl_second;
     QHBoxLayout hbl_down;
+    QStandardItemModel model;
     QTableView tbv_upload;
 
     QFormLayout fl_searchbox;
     QLineEdit le_search;
     QLabel lb_search;
 
-    QPushButton pb_search;
     QPushButton pb_refresh;
     QPushButton pb_upload;
     QPushButton pb_delete;
+    QPushButton pb_download;
 
-    QPushButton pb_logout;
+    int currentIndex;
 
     explicit UIpack_as_widget_upload(QWidget *parent = nullptr) : QWidget(parent)
     {
@@ -117,25 +118,31 @@ public:
 
         vbl_main.addLayout(&hbl_second);
         vbl_main.addWidget(&tbv_upload);
+
+        tbv_upload.resize(850,400);
+        model.setHorizontalHeaderLabels({"filename","MD5","cookie","ip","length","zaixian"});
+        tbv_upload.horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+        tbv_upload.setSelectionBehavior(QAbstractItemView::SelectRows);
+        tbv_upload.setModel(&model);
+
         vbl_main.addLayout(&hbl_down);
 
         hbl_second.addLayout(&fl_searchbox);
-        hbl_second.addWidget(&pb_search);
         hbl_second.addWidget(&pb_refresh);
         hbl_second.addStretch();
         hbl_second.addWidget(&pb_upload);
         hbl_second.addWidget(&pb_delete);
+        hbl_second.addWidget(&pb_download);
+
 
         fl_searchbox.addRow(&lb_search, &le_search);
 
         hbl_down.addStretch();
-        hbl_down.addWidget(&pb_logout);
 
-        pb_search.setText("搜索");
         pb_refresh.setText("刷新");
         pb_upload.setText("上传");
         pb_delete.setText("删除");
-        pb_logout.setText("登出");
+        pb_download.setText("下载");
     }
 };
 
