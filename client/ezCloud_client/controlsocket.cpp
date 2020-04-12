@@ -134,6 +134,7 @@ void ControlSocket::refresh()
 
 void ControlSocket::heartBeat()
 {
+    qDebug()<<flag;
     if (flag==0)
     {
         flag=1;

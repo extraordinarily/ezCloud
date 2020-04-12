@@ -104,13 +104,19 @@ void EZClient::handleSender()
         sender->close(); return ;
     }
     flen = localFile->size();
-    sendFile(0);
+    sendFile(-1);
 }
 
 void EZClient::sendFile(qint64 num)
 {
-    flen-=num;
-    if (flen==0) {sender->flush();handleNCon(); return ;}
+    if (num==0) return ;
+    if(num!=-1) flen-=num;
+    if (flen==0)
+    {
+        sender->flush();
+        handleNCon();
+        return ;
+    }
     QByteArray tmp = localFile->read(65536);
     sender->write(tmp);
 }
@@ -118,8 +124,8 @@ void EZClient::sendFile(qint64 num)
 void EZClient::handleConnection()
 {
     sender = fileServer.nextPendingConnection();
-    connect(sender,&QTcpSocket::readyRead,this,&EZClient::handleSender);
-    connect(sender,&QTcpSocket::bytesWritten,this,&EZClient::sendFile);
+    connect(sender,&QTcpSocket::readyRead,this,&EZClient::handleSender,Qt::QueuedConnection);
+    connect(sender,&QTcpSocket::bytesWritten,this,&EZClient::sendFile,Qt::QueuedConnection);
     downloadUI.show();
 }
 
@@ -143,8 +149,8 @@ void EZClient::download()
     rFile = new QFile(dir.absoluteFilePath(fname.split("/").last()));
     rFile->open(QFile::WriteOnly);
 
-    connect(receiver,&QTcpSocket::readyRead,this,&EZClient::freceive);
-
+    connect(receiver,&QTcpSocket::readyRead,this,&EZClient::freceive,Qt::QueuedConnection);
+    connect(receiver,&QTcpSocket::disconnected,this,&EZClient::recNCon,Qt::QueuedConnection);
     receiver->write(msg);
     receiver->waitForBytesWritten();
     receiver->flush();
@@ -153,20 +159,21 @@ void EZClient::download()
 void EZClient::freceive()
 {
     QByteArray tmp = receiver->readAll();
+    if (tmp.length()==0) return ;
     rlen-=tmp.length();
     rFile->write(tmp);
     if (rlen==0) {
-        recNCon();
+        rFile->close();
+        delete rFile;
     }
 }
 
 void EZClient::recNCon()
 {
     disconnect(receiver,&QTcpSocket::readyRead,this,&EZClient::freceive);
+    disconnect(receiver,&QTcpSocket::disconnected,this,&EZClient::recNCon);
     receiver->close();
     delete receiver;
-    rFile->close();
-    delete rFile;
     downloadUI.hide();
 }
 
@@ -249,7 +256,7 @@ void EZClient::upload()
 void EZClient::refreshOver(int num)
 {
     uploadUI.model.clear();
-    uploadUI.model.setHorizontalHeaderLabels({"文件名","MD5","cookie","IP","文件大侠","在线状态"});
+    uploadUI.model.setHorizontalHeaderLabels({"文件名","MD5","cookie","IP","文件大小","在线状态"});
     for (int i=0;i<num;i++)
     {
         uploadUI.model.setItem(i,0,new QStandardItem(controlSocket.item[i*6].split("/").last()));
