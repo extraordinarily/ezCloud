@@ -21,6 +21,7 @@ public:
     QSqlDatabase db;
     void dbHandler(SocketThread * thread,QByteArray packet);
     QWidget *mainwin;
+    void delMe(SocketThread * thread);
 
 protected:
     virtual void incomingConnection(qintptr handle) override;

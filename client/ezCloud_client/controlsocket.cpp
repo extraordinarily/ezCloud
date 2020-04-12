@@ -22,6 +22,7 @@ void ControlSocket::login(QString ip,int port)
         emit loginOver(false);
         return ;
     }
+    socket.setSocketOption(QAbstractSocket::KeepAliveOption,true);
     char buf[4]; buf[0]=0; buf[1]=0; buf[2]=4; buf[3]=cookie;
     socket.write(buf,4);
     if (!socket.waitForBytesWritten())
@@ -33,7 +34,6 @@ void ControlSocket::login(QString ip,int port)
     socket.flush();
     if (!socket.waitForReadyRead())
     {
-        qDebug()<<"ha";
         socket.close();
         emit loginOver(false);
         return ;
@@ -49,7 +49,7 @@ void ControlSocket::login(QString ip,int port)
     connect(&timer,&QTimer::timeout,this,&ControlSocket::heartBeat,Qt::QueuedConnection);
     connect(&socket,&QTcpSocket::disconnected,this,&ControlSocket::errorHandler);
     emit loginOver(true);
-    active = std::chrono::steady_clock::now();
+    flag = 0;
     timer.start(5000);
 }
 
@@ -74,37 +74,49 @@ void ControlSocket::messageHandler()
     len+=tmpLen;
     if (len>=4)
     {
-        int hi = (unsigned int) mBuf[0];
-        int lo = (unsigned int) mBuf[1];
+        int hi = (unsigned int)(unsigned char) mBuf[0];
+        int lo = (unsigned int)(unsigned char) mBuf[1];
         hi = hi*256+lo;
-        if (len >= hi)
+        if (len >= hi+4)
         {
             if (mBuf[2]==8)
             {
-                //chuli
-
-                // filename MD5 cookie ip length zaixian
-                item[0] = "fq.avi";
-                item[1] = "hhhhxxaslk";
-                item[2] = "jiushini";
-                item[3] = "192.168.1.3";
-                item[4] = "50K";
-                item[5] = "zai";
-
-                item[0+6] = "fq.avi";
-                item[1+6] = "hhhhxxaslk";
-                item[2+6] = "jiushini";
-                item[3+6] = "192.168.1.3";
-                item[4+6] = "50K";
-                item[5+6] = "zai";
-
-                emit refreshOver(2);
+                int num = hi/256;
+                int index = 0;
+                int tmp = 4;
+                for (int i=0;i<num;i++)
+                {
+                    // 192 filename
+                    // 50  MD5
+                    // 1   cookie
+                    // 1   flag
+                    // 4   ip
+                    // 4   MB
+                    // 4   BB
+                    std::string filename(mBuf+tmp,mBuf+tmp+strlen(mBuf+tmp));
+                    std::string md5(mBuf+tmp+192,mBuf+tmp+192+strlen(mBuf+tmp+192));
+                    int cookie = mBuf[tmp+192+50];
+                    int flag = mBuf[tmp+192+51];
+                    quint32 ip = *(int *)(mBuf+tmp+244);
+                    long long MB = *(int *)(mBuf+tmp+248);
+                    long long BB = *(int *)(mBuf+tmp+252);
+                    BB += MB<<20;
+                    QHostAddress aaa(ip);
+                    item[index++] = QString::fromStdString(filename);
+                    item[index++] = QString::fromStdString(md5);
+                    item[index++] = QString::number(cookie);
+                    item[index++] = aaa.toString();
+                    item[index++] = QString::number(BB);
+                    item[index++] = flag ? "在线" : "不在";
+                    tmp+=256;
+                }
+                emit refreshOver(num);
             }
             for (int i=0;i<len-hi-4;i++) mBuf[i] = mBuf[i+4+hi];
             len -= (hi+4);
         }
     }
-    active = std::chrono::steady_clock::now();
+    flag = 0;
 }
 
 void ControlSocket::refresh()
@@ -122,15 +134,16 @@ void ControlSocket::refresh()
 
 void ControlSocket::heartBeat()
 {
-    auto gap = std::chrono::steady_clock::now() - active;
-    if (gap > std::chrono::seconds(10))
+    if (flag==0)
     {
-        errorHandler();
+        flag=1;
         return ;
     }
-    if (gap > std::chrono::seconds(5))
+
+    if (flag==1)
     {
         char buf[4]; buf[0]=0; buf[1]=0; buf[2]=0; buf[3]=0;
+        flag=2;
         socket.write(buf,4);
         if (!socket.waitForBytesWritten())
         {
@@ -138,5 +151,19 @@ void ControlSocket::heartBeat()
             return ;
         }
         socket.flush();
+        return ;
     }
+
+    if (flag==2)
+    {
+        errorHandler();
+        return ;
+    }
+}
+
+void ControlSocket::sendMSG(QByteArray msg)
+{
+    socket.write(msg);
+    socket.waitForBytesWritten();
+    socket.flush();
 }

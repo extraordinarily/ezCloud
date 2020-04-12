@@ -60,6 +60,12 @@ void EZClient::loginOver(bool succ)
         connect(&uploadUI.pb_delete,&QPushButton::clicked,this,&EZClient::deleteItem);
         connect(&uploadUI.pb_upload,&QPushButton::clicked,this,&EZClient::upload);
 
+        connect(this,&EZClient::sendMSG,&controlSocket,&ControlSocket::sendMSG);
+
+        fileServer.listen(QHostAddress::Any,30143);
+        connect(&fileServer,&QTcpServer::newConnection,this,&EZClient::handleConnection);
+
+        uploadUI.currentIndex = -1;
         refresh();
         uploadUI.show();
     }
@@ -70,35 +76,183 @@ void EZClient::loginOver(bool succ)
     }
 }
 
+void EZClient::handleNCon()
+{
+    localFile->close();
+    delete localFile;
+    sender->close();
+    delete sender;
+    downloadUI.hide();
+}
+
+void EZClient::handleSender()
+{
+    QByteArray tmp = sender->readAll();
+    rbuffer.append(tmp);
+    if (rbuffer.length()<192) return ;
+
+    std::string tfname(rbuffer.data(),rbuffer.data()+strlen(rbuffer.data()));
+    rbuffer.clear();
+    localFile = new QFile(QString::fromStdString(tfname));
+    if (!localFile->open(QFile::ReadOnly)) {
+        sender->close(); return ;
+    }
+    flen = localFile->size();
+    sendFile(0);
+}
+
+void EZClient::sendFile(qint64 num)
+{
+    flen-=num;
+    if (flen==0) {sender->flush(); sender->disconnect(); return ;}
+    QByteArray tmp = localFile->read(65536);
+    sender->write(tmp);
+}
+
+void EZClient::handleConnection()
+{
+    sender = fileServer.nextPendingConnection();
+    connect(sender,&QTcpSocket::readyRead,this,&EZClient::handleSender);
+    connect(sender,&QTcpSocket::disconnected,this,&EZClient::handleNCon);
+    connect(sender,&QTcpSocket::bytesWritten,this,&EZClient::sendFile);
+    downloadUI.show();
+}
+
 void EZClient::download()
 {
-    // qDebug()<<uploadUI.currentIndex;
+    int ind = uploadUI.currentIndex;
     downloadUI.show();
-    // xia zai socket qi dong.
+    receiver = new QTcpSocket();
+    receiver->connectToHost(controlSocket.item[ind*6+3],30143);
+    receiver->waitForConnected();
+
+    char buf[192];
+    QString fname = controlSocket.item[ind*6];
+    strcpy(buf,fname.toStdString().c_str());
+    int len = strlen(buf);
+    for (int i=len;len<192;len++) buf[i] = 0;
+    QByteArray msg(buf,192);
+
+    rlen = controlSocket.item[ind*6+4].toLongLong();
+    QDir dir(path);
+    rFile = new QFile(dir.absoluteFilePath(fname.split("/").last()));
+    rFile->open(QFile::WriteOnly);
+
+    connect(receiver,&QTcpSocket::readyRead,this,&EZClient::freceive);
+    connect(receiver,&QTcpSocket::disconnected,this,&EZClient::recNCon);
+
+    receiver->write(msg);
+    receiver->waitForBytesWritten();
+    receiver->flush();
 }
+
+void EZClient::freceive()
+{
+    QByteArray tmp = receiver->readAll();
+    rlen-=tmp.length();
+    rFile->write(tmp);
+    if (rlen==0) {
+        receiver->disconnect();
+        qDebug()<<"haole";
+    }
+}
+
+void EZClient::recNCon()
+{
+    receiver->close();
+    delete receiver;
+    rFile->close();
+    delete rFile;
+    downloadUI.hide();
+}
+
 void EZClient::deleteItem()
 {
-    // qDebug()<<uploadUI.currentIndex;
-    // emit fa bao
+    char buf[196];
+    if (uploadUI.currentIndex==-1) return ;
+    QString fname = controlSocket.item[uploadUI.currentIndex*6];
+    QString ccc = controlSocket.item[uploadUI.currentIndex*6+2];
+    strcpy(buf+4,fname.toStdString().c_str());
+    int len = strlen(buf+4);
+    for (int i=len+4;len<196;len++) buf[i] = 0;
+    buf[3] = ccc.toInt();
+    buf[2] = 9;
+    buf[1] = 0xc0;
+    buf[0] = 0;
+    QByteArray msg(buf,196);
+    emit sendMSG(msg);
 }
+
+QString fileMd5(const QString &sourceFilePath) {
+
+    QFile sourceFile(sourceFilePath);
+    qint64 fileSize = sourceFile.size();
+    const qint64 bufferSize = 10240;
+
+    if (sourceFile.open(QIODevice::ReadOnly)) {
+        char buffer[bufferSize];
+        int bytesRead;
+        int readSize = qMin(fileSize, bufferSize);
+
+        QCryptographicHash hash(QCryptographicHash::Md5);
+
+        while (readSize > 0 && (bytesRead = sourceFile.read(buffer, readSize)) > 0) {
+            fileSize -= bytesRead;
+            hash.addData(buffer, bytesRead);
+            readSize = qMin(fileSize, bufferSize);
+        }
+
+        sourceFile.close();
+        return QString(hash.result().toHex());
+    }
+    return QString();
+}
+
 void EZClient::upload()
 {
+    char tmp[260];
+    char *buf=tmp+4;
     QString fileName=QFileDialog::getOpenFileName();
-    // 计算MD5
-    // emit 上传
+    if (fileName=="") return ;
+    QString md5 = fileMd5(fileName);
+    QFile sourceFile(fileName);
+    qint64 fileSize = sourceFile.size();
+
+    // 192 filename
+    // 56  MD5
+    // 4   MB
+    // 4   BB
+    strcpy(buf,fileName.toStdString().c_str());
+    int len = strlen(buf);
+    for (int i=len;i<192;i++) buf[i]=0;
+    strcpy(buf+192,md5.toStdString().c_str());
+    for (int i=192+32;i<192+56;i++) buf[i]=0;
+
+    int BB = fileSize%(1<<20); *(int *)(buf+252) = BB;
+    int MB = fileSize/(1<<20); *(int *)(buf+248) = MB;
+    tmp[0] = 1;
+    tmp[1] = 0;
+    tmp[2] = 10;
+    tmp[3] = controlSocket.cookie;
+    QByteArray msg(tmp,260);
+    emit sendMSG(msg);
 }
 
 void EZClient::refreshOver(int num)
 {
     uploadUI.model.clear();
-    uploadUI.model.setHorizontalHeaderLabels({"filename","MD5","cookie","ip","length","zaixian"});
+    uploadUI.model.setHorizontalHeaderLabels({"文件名","MD5","cookie","IP","文件大侠","在线状态"});
     for (int i=0;i<num;i++)
-    for (int j=0;j<6;j++)
-    uploadUI.model.setItem(i,j,new QStandardItem(controlSocket.item[i*6+j]));
+    {
+        uploadUI.model.setItem(i,0,new QStandardItem(controlSocket.item[i*6].split("/").last()));
+        for (int j=1;j<6;j++)
+        uploadUI.model.setItem(i,j,new QStandardItem(controlSocket.item[i*6+j]));
+    }
 }
 
 void EZClient::refresh()
 {
+    uploadUI.currentIndex = -1;
     emit csRefresh();
 }
 

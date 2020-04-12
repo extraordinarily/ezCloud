@@ -9,6 +9,8 @@
 #include <QTcpSocket>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QTcpServer>
+#include <QCryptographicHash>
 
 class EZClient : public QObject
 {
@@ -23,6 +25,11 @@ public:
     UIpack_as_widget_upload uploadUI;
     UIpack_as_widget_download downloadUI;
     ControlSocket controlSocket;
+
+    QByteArray rbuffer;
+    QTcpServer fileServer;
+    QTcpSocket *sender;
+    QTcpSocket *receiver;
 
     void showLoginUI();
 
@@ -40,8 +47,22 @@ public:
     void deleteItem();
     void upload();
 
+    long long flen;
+    QFile * localFile;
+    long long rlen;
+    QFile * rFile;
+    void handleConnection();
+    void handleSender();
+    void handleNCon();
+    void sendFile(qint64 num);
+
+    void freceive();
+    void recNCon();
+
+
 signals:
     void csLogin(QString ip,int port);
     void csRefresh();
+    void sendMSG(QByteArray msg);
 };
 #endif // EZCLIENT_H

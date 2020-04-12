@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QTcpSocket>
 #include <bits/stdc++.h>
+#include <QHostAddress>
 
 class ControlSocket : public QThread
 {
@@ -16,7 +17,7 @@ public:
     int cookie;
     QTcpSocket socket;
     QTimer timer;
-    std::chrono::steady_clock::time_point active;
+    int flag;
 
     char mBuf[65536]; int len;
     QString item[600];
@@ -27,6 +28,7 @@ public:
     void heartBeat();
     void errorHandler();
     void stopAll();
+    void sendMSG(QByteArray msg);
 
 signals:
     void loginOver(bool succ);

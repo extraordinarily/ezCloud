@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include <QTcpSocket>
+#include <QHostAddress>
 #include <bits/stdc++.h>
 
 class SocketThread : public QThread
@@ -14,14 +15,16 @@ public:
     QTcpSocket *socket;
     char buf[65536];
     int len;
+    int ip;
 
     void run() override;
 
     void messageHandler();
     void sendMessage(QByteArray message);
+    void error();
 
 signals:
-    void delMe();
+    void delMe(SocketThread * thread);
     void dbHandler(SocketThread * thread,QByteArray packet);
 };
 

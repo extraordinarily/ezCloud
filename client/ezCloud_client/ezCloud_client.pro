@@ -20,15 +20,13 @@ SOURCES += \
     filesever.cpp \
     filesocket.cpp \
     main.cpp \
-    ezclient.cpp \
-    senderthread.cpp
+    ezclient.cpp
 
 HEADERS += \
     controlsocket.h \
     ezclient.h \
     filesever.h \
     filesocket.h \
-    senderthread.h \
     ui_header.h
 
 # Default rules for deployment.
