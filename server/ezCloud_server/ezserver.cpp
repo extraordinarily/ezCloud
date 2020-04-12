@@ -27,6 +27,8 @@ EZServer::~EZServer()
 
 void EZServer::delMe(SocketThread *thread)
 {
+    QSqlQuery query;
+    query.exec("update tcookie set flag = 0 where cookie = " + QString::number(thread->cookie));
     for (std::list<SocketThread *>::iterator
          it = socketList.begin();it!=socketList.end();it++)
     if (thread == (*it))
@@ -67,6 +69,7 @@ void EZServer::dbHandler(SocketThread * thread,QByteArray packet)
         {
             tmp[0]=0; tmp[1]=0; tmp[2]=3; tmp[3]=0;
         }
+        thread->cookie = 400;
         message = QByteArray(tmp,4);
     }
     else if (packet.data()[2]==4)
@@ -78,6 +81,7 @@ void EZServer::dbHandler(SocketThread * thread,QByteArray packet)
             query.exec("update tcookie set flag = 1, ip = " + QString::number(thread->ip)
                        + " where cookie = " + QString::number((int)packet.data()[3]));
             tmp[0]=0; tmp[1]=0; tmp[2]=5; tmp[3]=0;
+            thread->cookie = (int)packet.data()[3];
         }
         else
         {
@@ -107,8 +111,8 @@ void EZServer::dbHandler(SocketThread * thread,QByteArray packet)
             buf[192+50] = query.value(2).toInt();
             buf[192+51] = query.value(5).toInt();
             *(int *)(buf+244) = query.value(6).toInt();
-            *(int *)(buf+248) = query.value(4).toInt();
-            *(int *)(buf+252) = query.value(5).toInt();
+            *(int *)(buf+248) = query.value(3).toInt();
+            *(int *)(buf+252) = query.value(4).toInt();
             QByteArray msg(buf,256);
             tmsg.append(msg);
         }
@@ -136,6 +140,7 @@ void EZServer::dbHandler(SocketThread * thread,QByteArray packet)
         int cookie = packet.data()[3];
         int MB = *(int *)(packet.data()+252);
         int BB = *(int *)(packet.data()+256);
+
         query.exec("insert into tfile (filename, md5, cookie, MB, BB) values ( \""
                    + QString::fromStdString(filename) + "\" , \""
                    + QString::fromStdString(md5) + "\" , "

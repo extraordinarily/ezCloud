@@ -16,6 +16,7 @@ public:
     char buf[65536];
     int len;
     int ip;
+    int cookie;
 
     void run() override;
 

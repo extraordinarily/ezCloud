@@ -78,11 +78,17 @@ void EZClient::loginOver(bool succ)
 
 void EZClient::handleNCon()
 {
+    qDebug()<<"发完了";
     localFile->close();
     delete localFile;
+    qDebug()<<"文件关掉";
+    disconnect(sender,&QTcpSocket::readyRead,this,&EZClient::handleSender);
+    disconnect(sender,&QTcpSocket::bytesWritten,this,&EZClient::sendFile);
     sender->close();
     delete sender;
+    qDebug()<<"sender关掉";
     downloadUI.hide();
+    qDebug()<<"取消显示";
 }
 
 void EZClient::handleSender()
@@ -104,7 +110,7 @@ void EZClient::handleSender()
 void EZClient::sendFile(qint64 num)
 {
     flen-=num;
-    if (flen==0) {sender->flush(); sender->disconnect(); return ;}
+    if (flen==0) {sender->flush();handleNCon(); return ;}
     QByteArray tmp = localFile->read(65536);
     sender->write(tmp);
 }
@@ -113,7 +119,6 @@ void EZClient::handleConnection()
 {
     sender = fileServer.nextPendingConnection();
     connect(sender,&QTcpSocket::readyRead,this,&EZClient::handleSender);
-    connect(sender,&QTcpSocket::disconnected,this,&EZClient::handleNCon);
     connect(sender,&QTcpSocket::bytesWritten,this,&EZClient::sendFile);
     downloadUI.show();
 }
@@ -139,7 +144,6 @@ void EZClient::download()
     rFile->open(QFile::WriteOnly);
 
     connect(receiver,&QTcpSocket::readyRead,this,&EZClient::freceive);
-    connect(receiver,&QTcpSocket::disconnected,this,&EZClient::recNCon);
 
     receiver->write(msg);
     receiver->waitForBytesWritten();
@@ -152,13 +156,13 @@ void EZClient::freceive()
     rlen-=tmp.length();
     rFile->write(tmp);
     if (rlen==0) {
-        receiver->disconnect();
-        qDebug()<<"haole";
+        recNCon();
     }
 }
 
 void EZClient::recNCon()
 {
+    disconnect(receiver,&QTcpSocket::readyRead,this,&EZClient::freceive);
     receiver->close();
     delete receiver;
     rFile->close();
@@ -230,6 +234,10 @@ void EZClient::upload()
 
     int BB = fileSize%(1<<20); *(int *)(buf+252) = BB;
     int MB = fileSize/(1<<20); *(int *)(buf+248) = MB;
+    qDebug()<<MB;
+    qDebug()<<BB;
+    qDebug()<<fileSize;
+    qDebug()<<"";
     tmp[0] = 1;
     tmp[1] = 0;
     tmp[2] = 10;
