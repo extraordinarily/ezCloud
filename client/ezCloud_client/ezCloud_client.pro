@@ -17,16 +17,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     controlsocket.cpp \
-    filesever.cpp \
-    filesocket.cpp \
     main.cpp \
     ezclient.cpp
 
 HEADERS += \
     controlsocket.h \
     ezclient.h \
-    filesever.h \
-    filesocket.h \
     ui_header.h
 
 # Default rules for deployment.
