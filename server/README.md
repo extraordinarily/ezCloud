@@ -1,2 +1,3 @@
 # server
-TODO: store cookie
+Released now！
+Readme will be updated later.

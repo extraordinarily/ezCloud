@@ -1,2 +1,3 @@
 # client
-TODO: handle chuan xia lai de shu ju
+Released now！
+Readme will be updated later.
